@@ -1,5 +1,5 @@
-import EventList from "@/components/EventList";
+  import EventList from "@/components/EventList";
 
-export default function HomePage() {
-  return <EventList />;
-}
+  export default function HomePage() {
+    return <EventList />;
+  }

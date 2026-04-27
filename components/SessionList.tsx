@@ -1,5 +1,5 @@
 "use client";
-
+import CameraSession from "@/components/CameraSession";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
@@ -28,6 +28,7 @@ export default function SessionList({ eventId }: Props) {
   const [sessions, setSessions] = useState<EventSession[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
+  const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
 
   useEffect(() => {
     Promise.all([
@@ -119,14 +120,33 @@ export default function SessionList({ eventId }: Props) {
                       )}
                     </div>
                     <button
-                      disabled
-                      title="Yakında aktif olacak"
-                      className="h-8 px-3 text-xs font-medium border border-slate-200 dark:border-zinc-700 text-slate-300 dark:text-zinc-600 rounded-md cursor-not-allowed select-none"
+                      onClick={() => setActiveSessionId(session.id)}
+                      className="h-8 px-3 text-xs font-medium border border-slate-200 dark:border-zinc-700 text-slate-700 dark:text-zinc-300 rounded-md hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors"
                     >
                       Başlat
                     </button>
                   </div>
                 ))}
+
+                {activeSessionId && (
+                  <div className="mt-6">
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-sm font-medium text-slate-700 dark:text-zinc-300">
+                        Aktif Session: {sessions.find((s) => s.id === activeSessionId)?.sessionName}
+                      </span>
+                      <button
+                        onClick={() => setActiveSessionId(null)}
+                        className="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-zinc-300 transition-colors"
+                      >
+                        Kapat
+                      </button>
+                    </div>
+                    <CameraSession
+                      sessionId={activeSessionId}
+                      onStop={() => setActiveSessionId(null)}
+                    />
+                  </div>
+                )}
               </div>
             )}
           </>

@@ -12,4 +12,10 @@ export const emotionsService = {
 
   deleteBySession: (sessionId: string) =>
     api.delete<void>(`/emotions/by-session/${sessionId}`),
+
+  analyzeFrame: (base64Frame: string) =>
+    api.post<{ faces: { emotion: string; score: number; bbox: { x1: number; y1: number; x2: number; y2: number } }[] }>(
+      "/emotions/analyze-frame",
+      { frame: base64Frame }
+    ),
 };
