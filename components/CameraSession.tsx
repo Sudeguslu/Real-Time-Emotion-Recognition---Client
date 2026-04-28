@@ -22,18 +22,30 @@ interface Face {
 
 interface Props {
   sessionId: string;
+  durationMinutes: number;
   onStop?: () => void;
 }
 
-export default function CameraSession({ sessionId, onStop }: Props) {
-  const videoRef    = useRef<HTMLVideoElement>(null);
-  const canvasRef   = useRef<HTMLCanvasElement>(null);
-  const streamRef   = useRef<MediaStream | null>(null);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+export default function CameraSession({ sessionId, durationMinutes, onStop }: Props) {
+  const videoRef      = useRef<HTMLVideoElement>(null);
+  const canvasRef     = useRef<HTMLCanvasElement>(null);
+  const streamRef     = useRef<MediaStream | null>(null);
+  const intervalRef   = useRef<ReturnType<typeof setInterval> | null>(null);
+  const countdownRef  = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const [faces, setFaces]     = useState<Face[]>([]);
-  const [running, setRunning] = useState(false);
-  const [error, setError]     = useState<string | null>(null);
+  const [faces, setFaces]           = useState<Face[]>([]);
+  const [running, setRunning]       = useState(false);
+  const [error, setError]           = useState<string | null>(null);
+  const [remaining, setRemaining]   = useState(durationMinutes * 60);
+
+  const stopCamera = useCallback(() => {
+    if (intervalRef.current)  clearInterval(intervalRef.current);
+    if (countdownRef.current) clearInterval(countdownRef.current);
+    streamRef.current?.getTracks().forEach((t) => t.stop());
+    setRunning(false);
+    setFaces([]);
+    setTimeout(() => onStop?.(), 0);
+  }, [onStop]);
 
   const startCamera = useCallback(async () => {
     try {
@@ -43,21 +55,34 @@ export default function CameraSession({ sessionId, onStop }: Props) {
         videoRef.current.srcObject = stream;
         await videoRef.current.play();
       }
+      setRemaining(durationMinutes * 60);
       setRunning(true);
       setError(null);
     } catch {
       setError("Kamera erişimi reddedildi.");
     }
-  }, []);
+  }, [durationMinutes]);
 
-  const stopCamera = useCallback(() => {
-    if (intervalRef.current) clearInterval(intervalRef.current);
-    streamRef.current?.getTracks().forEach((t) => t.stop());
-    setRunning(false);
-    setFaces([]);
-    onStop?.();
-  }, [onStop]);
+  // Geri sayım
+  useEffect(() => {
+    if (!running) return;
 
+    countdownRef.current = setInterval(() => {
+      setRemaining((prev) => {
+        if (prev <= 1) {
+          stopCamera();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => {
+      if (countdownRef.current) clearInterval(countdownRef.current);
+    };
+  }, [running, stopCamera]);
+
+  // Kare analizi
   useEffect(() => {
     if (!running) return;
 
@@ -81,7 +106,7 @@ export default function CameraSession({ sessionId, onStop }: Props) {
             if (mapped) {
               await emotionsService.create({
                 emotion: mapped,
-                sessionId: sessionId,
+                sessionId,
                 date: new Date().toISOString(),
               });
             }
@@ -99,19 +124,22 @@ export default function CameraSession({ sessionId, onStop }: Props) {
     };
   }, [running, sessionId]);
 
+  const minutes = Math.floor(remaining / 60).toString().padStart(2, "0");
+  const seconds = (remaining % 60).toString().padStart(2, "0");
+
   return (
     <div className="flex flex-col items-center gap-4">
-      {error && (
-        <p className="text-sm text-red-500">{error}</p>
-      )}
+      {error && <p className="text-sm text-red-500">{error}</p>}
 
       <div className="relative rounded-xl overflow-hidden border border-slate-200 dark:border-zinc-800 bg-black">
-        <video
-          ref={videoRef}
-          className="w-full max-w-2xl"
-          muted
-          playsInline
-        />
+        <video ref={videoRef} className="w-full max-w-2xl" muted playsInline />
+
+        {running && (
+          <div className="absolute top-3 right-3 bg-black/60 text-white text-sm font-mono px-2.5 py-1 rounded-md">
+            {minutes}:{seconds}
+          </div>
+        )}
+
         {faces.map((face, i) => (
           <div
             key={i}

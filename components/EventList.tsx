@@ -11,14 +11,30 @@ export default function EventList() {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
     eventsService.getAll().then(setEvents).finally(() => setLoading(false));
   }, []);
 
-  function handleCreated(event: Event) {
-    setEvents((prev) => [...prev, event]);
+  function handleCreated() {
+    eventsService.getAll().then(setEvents);
+  }
+
+  async function handleDelete(e: React.MouseEvent, eventId: string) {
+    e.stopPropagation();
+    if (!confirm("Bu eventi silmek istediğine emin misin?")) return;
+    setDeletingId(eventId);
+    try {
+      await eventsService.delete(eventId);
+      setEvents((prev) => prev.filter((ev) => ev.id !== eventId));
+    } catch (err) {
+      console.error(err);
+      alert("Silme işlemi başarısız oldu.");
+    } finally {
+      setDeletingId(null);
+    }
   }
 
   return (
@@ -48,29 +64,36 @@ export default function EventList() {
                 <span className="text-slate-300 dark:text-zinc-700 font-light select-none">|</span>
                 <span className="text-sm text-slate-400 dark:text-zinc-500">{events.length} kayıt</span>
               </div>
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => setModalOpen(true)}
-                  className="h-8 px-3 text-sm font-medium bg-slate-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-md hover:bg-slate-700 dark:hover:bg-zinc-300 transition-colors"
-                >
-                  Event Tanımla
-                </button>
-              </div>
+              <button
+                onClick={() => setModalOpen(true)}
+                className="h-8 px-3 text-sm font-medium bg-slate-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-md hover:bg-slate-700 dark:hover:bg-zinc-300 transition-colors"
+              >
+                Event Tanımla
+              </button>
             </div>
             <div className="flex flex-col gap-2">
               {events.map((event) => (
-                <button
+                <div
                   key={event.id}
                   onClick={() => router.push(`/events/${event.id}`)}
-                  className="flex items-center justify-between w-full px-4 py-3.5 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-lg text-left hover:border-slate-300 dark:hover:border-zinc-700 hover:shadow-sm dark:hover:shadow-none transition-all"
+                  className="flex items-center justify-between w-full px-4 py-3.5 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-lg cursor-pointer hover:border-slate-300 dark:hover:border-zinc-700 hover:shadow-sm dark:hover:shadow-none transition-all"
                 >
                   <span className="text-sm font-medium text-slate-900 dark:text-zinc-100">
                     {event.eventName}
                   </span>
-                  <svg className="w-4 h-4 text-slate-400 dark:text-zinc-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                  </svg>
-                </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={(e) => handleDelete(e, event.id)}
+                      disabled={deletingId === event.id}
+                      className="h-7 px-2.5 text-xs font-medium border border-red-200 dark:border-red-900 text-red-500 dark:text-red-400 rounded-md hover:bg-red-50 dark:hover:bg-red-950 transition-colors disabled:opacity-40"
+                    >
+                      {deletingId === event.id ? "Siliniyor..." : "Sil"}
+                    </button>
+                    <svg className="w-4 h-4 text-slate-400 dark:text-zinc-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                    </svg>
+                  </div>
+                </div>
               ))}
             </div>
           </>

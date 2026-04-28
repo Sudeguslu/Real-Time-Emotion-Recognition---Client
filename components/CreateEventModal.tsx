@@ -7,7 +7,7 @@ import type { Event } from "@/lib/api/types";
 interface Props {
   open: boolean;
   onClose: () => void;
-  onCreated: (event: Event) => void;
+  onCreated: () => void;
 }
 
 export default function CreateEventModal({ open, onClose, onCreated }: Props) {
@@ -33,7 +33,7 @@ export default function CreateEventModal({ open, onClose, onCreated }: Props) {
     setError(null);
     try {
       const created = await eventsService.create({ eventName: name.trim() });
-      onCreated(created);
+      onCreated();
       onClose();
     } catch {
       setError("Event oluşturulurken bir hata oluştu.");
