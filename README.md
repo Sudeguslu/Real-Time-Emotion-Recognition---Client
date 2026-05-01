@@ -1,36 +1,123 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Real-Time Emotion Recognition — Client
 
-## Getting Started
+Next.js tabanlı gerçek zamanlı duygu tanıma uygulamasının istemci tarafı. Kamera üzerinden yüz analizi yaparak duygu verilerini toplar, event ve session bazında gruplandırarak bir backend API'ye kaydeder.
 
-First, run the development server:
+---
+
+## Özellikler
+
+- **Event Yönetimi** — Event oluşturma, listeleme ve silme
+- **Session Yönetimi** — Event başına session oluşturma, listeleme ve silme
+- **Gerçek Zamanlı Duygu Analizi** — Kamera üzerinden yüz tespiti ve duygu sınıflandırması (mutlu, üzgün, kızgın, şaşkın, korku, iğrenme, nötr)
+- **Süre Bazlı Kayıt** — Session başlatılırken belirlenen süre dolunca kamera otomatik kapanır, geri sayım ekranda gösterilir
+- **Karanlık / Aydınlık Tema** — Sistem temasına göre otomatik uyum
+
+---
+
+## Teknolojiler
+
+| Katman | Teknoloji |
+|---|---|
+| Framework | Next.js 15 (App Router) |
+| Dil | TypeScript |
+| Stil | Tailwind CSS |
+| API İletişimi | Fetch API (custom `api` client) |
+
+---
+
+## Kurulum
+
+### Gereksinimler
+
+- Node.js 18+
+- Çalışır durumda bir backend API (varsayılan: `http://127.0.0.1:8080`)
+
+### Adımlar
 
 ```bash
+# Repoyu klonla
+git clone https://github.com/Sudeguslu/Real-Time-Emotion-Recognition---Client.git
+cd Real-Time-Emotion-Recognition---Client
+
+# Bağımlılıkları yükle
+npm install
+
+# Ortam değişkenlerini ayarla
+cp .env.local.example .env.local
+# .env.local dosyasını düzenle → NEXT_PUBLIC_API_URL=http://127.0.0.1:8080
+
+# Geliştirme sunucusunu başlat
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Uygulama `http://localhost:3000` adresinde çalışacaktır.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Ortam Değişkenleri
 
-## Learn More
+`.env.local` dosyasında aşağıdaki değişkeni tanımla:
 
-To learn more about Next.js, take a look at the following resources:
+```env
+NEXT_PUBLIC_API_URL=http://127.0.0.1:8080
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Proje Yapısı
 
-## Deploy on Vercel
+```
+├── app/
+│   ├── page.tsx                  # Ana sayfa → Event listesi
+│   └── events/[id]/page.tsx      # Event detay sayfası → Session listesi
+├── components/
+│   ├── CameraSession.tsx         # Kamera + duygu analizi + geri sayım
+│   ├── CreateEventModal.tsx      # Event oluşturma modalı
+│   ├── CreateSessionModal.tsx    # Session oluşturma modalı
+│   ├── EventList.tsx             # Event listesi
+│   ├── Navbar.tsx                # Üst navigasyon
+│   ├── SessionList.tsx           # Session listesi
+│   └── ThemeProvider.tsx         # Tema yönetimi
+├── lib/
+│   ├── api/
+│   │   ├── client.ts             # HTTP istemcisi (GET/POST/PUT/DELETE)
+│   │   └── types.ts              # TypeScript tip tanımları
+│   └── services/
+│       ├── emotions.ts           # Duygu analizi ve kayıt servisi
+│       ├── events.ts             # Event CRUD servisi
+│       ├── eventSessions.ts      # Session CRUD servisi
+│       └── logs.ts               # Log servisi
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Kullanım
+
+1. **Event oluştur** — Ana sayfada "Event Tanımla" butonuna tıkla
+2. **Session oluştur** — Event detay sayfasında "Session Oluştur" butonuna tıkla
+3. **Analizi başlat** — Session satırındaki "Başlat" butonuna tıkla, çalışma süresini dakika cinsinden gir
+4. **Kamera** — Belirlenen süre boyunca yüzleri algılar ve duygu verilerini kaydeder; süre dolunca otomatik durur
+5. **Silme** — Event veya session satırındaki "Sil" butonu ile kayıtları kaldır
+
+---
+
+## Backend API
+
+Bu uygulama aşağıdaki endpoint'leri kullanan bir REST API bekler:
+
+| Method | Endpoint | Açıklama |
+|---|---|---|
+| GET | `/events/` | Tüm eventleri listele |
+| POST | `/events/` | Event oluştur |
+| DELETE | `/events/{id}` | Event sil |
+| GET | `/event-sessions/by-event/{id}` | Event'e ait sessionları listele |
+| POST | `/event-sessions/` | Session oluştur |
+| DELETE | `/event-sessions/{id}` | Session sil |
+| POST | `/emotions/analyze` | Kare analizi (base64 görüntü) |
+| POST | `/emotions/` | Duygu kaydı oluştur |
+
+---
+
+## Lisans
+
+MIT
