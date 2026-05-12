@@ -1,5 +1,6 @@
 "use client";
 import CameraSession from "@/components/CameraSession";
+import SessionReport from "@/components/SessionReport";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
@@ -36,6 +37,11 @@ export default function SessionList({ eventId }: Props) {
   const [durationError, setDurationError] = useState<string | null>(null);
   const [activeDuration, setActiveDuration] = useState<number>(0);
 
+  // Rapor state'leri
+  const [reportSessionId, setReportSessionId] = useState<string | null>(null);
+  const [reportSessionName, setReportSessionName] = useState<string>("");
+  const [reportOpen, setReportOpen] = useState(false);
+
   useEffect(() => {
     Promise.all([
       eventsService.getById(eventId),
@@ -64,6 +70,21 @@ export default function SessionList({ eventId }: Props) {
       alert("Silme işlemi başarısız oldu.");
     } finally {
       setDeletingSessionId(null);
+    }
+  }
+
+  function openReport(sessionId: string, sessionName: string) {
+    setReportSessionId(sessionId);
+    setReportSessionName(sessionName);
+    setReportOpen(true);
+  }
+
+  function handleSessionStop() {
+    // Session bitince aktif session'ın adını bul ve raporu otomatik aç
+    const stoppedSession = sessions.find((s) => s.id === activeSessionId);
+    setActiveSessionId(null);
+    if (stoppedSession) {
+      openReport(stoppedSession.id, stoppedSession.sessionName);
     }
   }
 
@@ -143,6 +164,12 @@ export default function SessionList({ eventId }: Props) {
 
                     <div className="flex items-center gap-2">
                       <button
+                        onClick={() => openReport(session.id, session.sessionName)}
+                        className="h-8 px-2.5 text-xs font-medium border border-slate-200 dark:border-zinc-700 text-slate-600 dark:text-zinc-400 rounded-md hover:bg-slate-50 dark:hover:bg-zinc-800 transition-colors"
+                      >
+                        Raporu Gör
+                      </button>
+                      <button
                         onClick={() => handleDeleteSession(session.id)}
                         disabled={deletingSessionId === session.id}
                         className="h-8 px-2.5 text-xs font-medium border border-red-200 dark:border-red-900 text-red-500 dark:text-red-400 rounded-md hover:bg-red-50 dark:hover:bg-red-950 transition-colors disabled:opacity-40"
@@ -165,90 +192,102 @@ export default function SessionList({ eventId }: Props) {
                 ))}
 
                 {activeSessionId && (
-  <div className="mt-6">
-    <div className="flex items-center justify-between mb-3">
-      <span className="text-sm font-medium text-slate-700 dark:text-zinc-300">
-        Aktif Session: {sessions.find((s) => s.id === activeSessionId)?.sessionName}
-      </span>
-      <button
-        onClick={() => setActiveSessionId(null)}
-        className="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-zinc-300 transition-colors"
-      >
-        Kapat
-      </button>
-    </div>
-    <CameraSession
-      sessionId={activeSessionId}
-      durationMinutes={activeDuration}
-      onStop={() => setActiveSessionId(null)}
-    />
-  </div>
-)}
+                  <div className="mt-6">
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-sm font-medium text-slate-700 dark:text-zinc-300">
+                        Aktif Session: {sessions.find((s) => s.id === activeSessionId)?.sessionName}
+                      </span>
+                      <button
+                        onClick={() => setActiveSessionId(null)}
+                        className="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-zinc-300 transition-colors"
+                      >
+                        Kapat
+                      </button>
+                    </div>
+                    <CameraSession
+                      sessionId={activeSessionId}
+                      durationMinutes={activeDuration}
+                      onStop={handleSessionStop}
+                    />
+                  </div>
+                )}
               </div>
             )}
           </>
         )}
       </main>
-{durationModalOpen && (
-  <div
-    className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
-    onClick={() => setDurationModalOpen(false)}
-  >
-    <div
-      className="bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-lg shadow-lg w-full max-w-sm p-6"
-      onClick={(e) => e.stopPropagation()}
-    >
-      <h2 className="text-base font-semibold text-slate-900 dark:text-zinc-100 mb-4">
-        Süre Belirle
-      </h2>
-      <div className="flex flex-col gap-3">
-        <div className="flex flex-col gap-1.5">
-          <label className="text-xs font-medium text-slate-600 dark:text-zinc-400">
-            Çalışma Süresi (dakika)
-          </label>
-          <input
-            type="number"
-            min={1}
-            value={durationInput}
-            onChange={(e) => {
-              setDurationInput(e.target.value);
-              setDurationError(null);
-            }}
-            placeholder="örn. 30"
-            className="h-9 px-3 text-sm bg-white dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 rounded-md outline-none focus:border-slate-400 dark:focus:border-zinc-500 placeholder-slate-400 dark:placeholder-zinc-600 transition-colors"
-            autoFocus
-          />
-          {durationError && (
-            <p className="text-xs text-red-500">{durationError}</p>
-          )}
-        </div>
-        <div className="flex gap-2 justify-end pt-1">
-          <button
-            onClick={() => setDurationModalOpen(false)}
-            className="h-9 px-4 text-sm font-medium text-slate-600 dark:text-zinc-400 rounded-md hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors"
+
+      {/* Süre Modal */}
+      {durationModalOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+          onClick={() => setDurationModalOpen(false)}
+        >
+          <div
+            className="bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-lg shadow-lg w-full max-w-sm p-6"
+            onClick={(e) => e.stopPropagation()}
           >
-            İptal
-          </button>
-          <button
-            onClick={() => {
-              const val = parseInt(durationInput);
-              if (!durationInput || isNaN(val) || val < 1) {
-                setDurationError("Lütfen geçerli bir dakika girin.");
-                return;
-              }
-              setActiveDuration(val);
-              setActiveSessionId(pendingSessionId);
-              setDurationModalOpen(false);
-            }}
-            className="h-9 px-4 text-sm font-medium bg-slate-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-md hover:bg-slate-700 dark:hover:bg-zinc-300 transition-colors"
-          >
-            Başlat
-          </button>
+            <h2 className="text-base font-semibold text-slate-900 dark:text-zinc-100 mb-4">
+              Süre Belirle
+            </h2>
+            <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-medium text-slate-600 dark:text-zinc-400">
+                  Çalışma Süresi (dakika)
+                </label>
+                <input
+                  type="number"
+                  min={1}
+                  value={durationInput}
+                  onChange={(e) => {
+                    setDurationInput(e.target.value);
+                    setDurationError(null);
+                  }}
+                  placeholder="örn. 30"
+                  className="h-9 px-3 text-sm bg-white dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 rounded-md outline-none focus:border-slate-400 dark:focus:border-zinc-500 placeholder-slate-400 dark:placeholder-zinc-600 transition-colors"
+                  autoFocus
+                />
+                {durationError && (
+                  <p className="text-xs text-red-500">{durationError}</p>
+                )}
+              </div>
+              <div className="flex gap-2 justify-end pt-1">
+                <button
+                  onClick={() => setDurationModalOpen(false)}
+                  className="h-9 px-4 text-sm font-medium text-slate-600 dark:text-zinc-400 rounded-md hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors"
+                >
+                  İptal
+                </button>
+                <button
+                  onClick={() => {
+                    const val = parseInt(durationInput);
+                    if (!durationInput || isNaN(val) || val < 1) {
+                      setDurationError("Lütfen geçerli bir dakika girin.");
+                      return;
+                    }
+                    setActiveDuration(val);
+                    setActiveSessionId(pendingSessionId);
+                    setDurationModalOpen(false);
+                  }}
+                  className="h-9 px-4 text-sm font-medium bg-slate-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-md hover:bg-slate-700 dark:hover:bg-zinc-300 transition-colors"
+                >
+                  Başlat
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
-  </div>
-)}
+      )}
+
+      {/* Rapor Modal */}
+      {reportOpen && reportSessionId && (
+        <SessionReport
+          sessionId={reportSessionId}
+          sessionName={reportSessionName}
+          onClose={() => setReportOpen(false)}
+        />
+      )}
+
       {event && (
         <CreateSessionModal
           open={modalOpen}
