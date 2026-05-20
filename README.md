@@ -93,11 +93,11 @@ NEXT_PUBLIC_API_URL=http://127.0.0.1:8080
 
 ## Kullanım
 
-1. **Event oluştur** — Ana sayfada "Event Tanımla" butonuna tıkla
-2. **Session oluştur** — Event detay sayfasında "Session Oluştur" butonuna tıkla
-3. **Analizi başlat** — Session satırındaki "Başlat" butonuna tıkla, çalışma süresini dakika cinsinden gir
+1. **Event oluştur** — Ana sayfada "Etkinlik Tanımla" butonuna tıkla
+2. **Session oluştur** — Event detay sayfasında "Oturum Oluştur" butonuna tıkla
+3. **Analizi başlat** — Oturum satırındaki "Başlat" butonuna tıkla, çalışma süresini dakika cinsinden gir
 4. **Kamera** — Belirlenen süre boyunca yüzleri algılar ve duygu verilerini kaydeder; süre dolunca otomatik durur
-5. **Silme** — Event veya session satırındaki "Sil" butonu ile kayıtları kaldır
+5. **Silme** — Event veya oturum satırındaki "Sil" butonu ile kayıtları kaldır
 
 ---
 

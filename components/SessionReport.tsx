@@ -61,7 +61,7 @@ export default function SessionReport({ sessionId, sessionName, onClose }: Props
           onClick={(e) => e.stopPropagation()}
         >
           <p className="text-sm text-slate-500 dark:text-zinc-400 mb-4">
-            Bu session için kayıtlı duygu verisi bulunamadı.
+            Bu oturum için kayıtlı duygu verisi bulunamadı.
           </p>
           <button onClick={onClose} className="h-9 px-4 text-sm font-medium bg-slate-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-md">
             Kapat
@@ -133,20 +133,32 @@ export default function SessionReport({ sessionId, sessionName, onClose }: Props
   };
 
   // ── Pasta SVG ──
-  const PIE_R = 80, PIE_CX = 100, PIE_CY = 100;
+  const PIE_R = 110;
+  const PIE_CX = 130;
+  const PIE_CY = 130;
   let cumulativeAngle = -Math.PI / 2;
+
   const pieArcs = pieSlices.map(([emotion, count]) => {
     const angle = (count / totalCount) * 2 * Math.PI;
     const startAngle = cumulativeAngle;
     cumulativeAngle += angle;
+    const midAngle = startAngle + angle / 2;
     const x1 = PIE_CX + PIE_R * Math.cos(startAngle);
     const y1 = PIE_CY + PIE_R * Math.sin(startAngle);
     const x2 = PIE_CX + PIE_R * Math.cos(cumulativeAngle);
     const y2 = PIE_CY + PIE_R * Math.sin(cumulativeAngle);
+    const LABEL_R = PIE_R * 0.62;
+    const lx = PIE_CX + LABEL_R * Math.cos(midAngle);
+    const ly = PIE_CY + LABEL_R * Math.sin(midAngle);
+    const pct = (count / totalCount) * 100;
     return {
-      emotion, count,
+      emotion,
+      count,
       path: `M ${PIE_CX} ${PIE_CY} L ${x1.toFixed(2)} ${y1.toFixed(2)} A ${PIE_R} ${PIE_R} 0 ${angle > Math.PI ? 1 : 0} 1 ${x2.toFixed(2)} ${y2.toFixed(2)} Z`,
-      pct: ((count / totalCount) * 100).toFixed(1),
+      pct: pct.toFixed(1),
+      showLabel: pct >= 4,
+      lx,
+      ly,
     };
   });
 
@@ -159,7 +171,7 @@ export default function SessionReport({ sessionId, sessionName, onClose }: Props
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-zinc-800">
           <div>
-            <h2 className="text-base font-semibold text-slate-900 dark:text-zinc-100">Session Raporu</h2>
+            <h2 className="text-base font-semibold text-slate-900 dark:text-zinc-100">Oturum Raporu</h2>
             <p className="text-xs text-slate-400 dark:text-zinc-500 mt-0.5">{sessionName}</p>
           </div>
           <button onClick={onClose} className="text-slate-400 hover:text-slate-600 dark:hover:text-zinc-300 transition-colors text-lg leading-none">✕</button>
@@ -246,22 +258,38 @@ export default function SessionReport({ sessionId, sessionName, onClose }: Props
             <h3 className="text-xs font-semibold text-slate-500 dark:text-zinc-400 uppercase tracking-wider mb-3">
               Toplam Duygu Oranları
             </h3>
-            <div className="flex items-center gap-8 flex-wrap">
-              <svg viewBox="0 0 200 200" className="w-40 h-40 shrink-0">
+            <div className="flex justify-center">
+              <svg viewBox="0 0 260 260" className="w-64 h-64">
                 {pieArcs.map(({ emotion, path }) => (
                   <path key={emotion} d={path} fill={EMOTION_COLOR[emotion]} stroke="white" strokeWidth={1.5} />
                 ))}
+                {pieArcs.map(({ emotion, lx, ly, pct, showLabel }) =>
+                  showLabel ? (
+                    <g key={`label-${emotion}`}>
+                      <text
+                        x={lx}
+                        y={ly - 5}
+                        textAnchor="middle"
+                        fontSize={10}
+                        fontWeight="600"
+                        fill="white"
+                      >
+                        {EMOTION_TR[emotion]}
+                      </text>
+                      <text
+                        x={lx}
+                        y={ly + 8}
+                        textAnchor="middle"
+                        fontSize={9}
+                        fill="white"
+                        opacity={0.85}
+                      >
+                        {pct}%
+                      </text>
+                    </g>
+                  ) : null
+                )}
               </svg>
-              <div className="flex flex-col gap-2">
-                {pieArcs.map(({ emotion, count, pct }) => (
-                  <div key={emotion} className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-sm shrink-0" style={{ backgroundColor: EMOTION_COLOR[emotion] }} />
-                    <span className="text-sm text-slate-700 dark:text-zinc-300 w-20">{EMOTION_TR[emotion]}</span>
-                    <span className="text-sm font-semibold text-slate-900 dark:text-zinc-100 w-10 text-right">{pct}%</span>
-                    <span className="text-xs text-slate-400 dark:text-zinc-500">({count} kayıt)</span>
-                  </div>
-                ))}
-              </div>
             </div>
           </div>
 

@@ -26,7 +26,7 @@ export default function Navbar() {
   return (
     <header className="h-14 bg-white dark:bg-zinc-900 border-b border-slate-200 dark:border-zinc-800 flex items-center px-6 shrink-0 transition-colors">
       <Link href="/" className="text-sm font-semibold text-slate-900 dark:text-zinc-100 tracking-tight">
-        Emotion Recognition
+        Yüz Yüze
       </Link>
       <div className="ml-auto flex items-center gap-2">
         <button

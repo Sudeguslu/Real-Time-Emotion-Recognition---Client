@@ -40,7 +40,7 @@ export default function CreateSessionModal({ open, eventId, onClose, onCreated }
       onCreated();
       onClose();
     } catch {
-      setError("Session oluşturulurken bir hata oluştu.");
+      setError("Oturum oluşturulurken bir hata oluştu.");
     } finally {
       setLoading(false);
     }
@@ -61,7 +61,7 @@ export default function CreateSessionModal({ open, eventId, onClose, onCreated }
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
             <label className="text-xs font-medium text-slate-600 dark:text-zinc-400">
-              Session Adı
+              Oturum Adı
             </label>
             <input
               ref={inputRef}

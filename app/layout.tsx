@@ -6,7 +6,7 @@ import "./globals.css";
 const geist = Geist({ variable: "--font-geist", subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Emotion Recognition",
+  title: "Yüz Yüze",
   description: "Real-time emotion recognition system",
 };
 

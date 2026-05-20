@@ -53,14 +53,14 @@ export default function EventList() {
               onClick={() => setModalOpen(true)}
               className="h-9 px-4 text-sm font-medium bg-slate-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-md hover:bg-slate-700 dark:hover:bg-zinc-300 transition-colors"
             >
-              Event Tanımla
+              Etkinlik Tanımla
             </button>
           </div>
         ) : (
           <>
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
-                <h1 className="text-lg font-semibold text-slate-900 dark:text-zinc-100">Eventler</h1>
+                <h1 className="text-lg font-semibold text-slate-900 dark:text-zinc-100">Etkinlikler</h1>
                 <span className="text-slate-300 dark:text-zinc-700 font-light select-none">|</span>
                 <span className="text-sm text-slate-400 dark:text-zinc-500">{events.length} kayıt</span>
               </div>
@@ -68,7 +68,7 @@ export default function EventList() {
                 onClick={() => setModalOpen(true)}
                 className="h-8 px-3 text-sm font-medium bg-slate-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-md hover:bg-slate-700 dark:hover:bg-zinc-300 transition-colors"
               >
-                Event Tanımla
+                Etkinlik Tanımla
               </button>
             </div>
             <div className="flex flex-col gap-2">

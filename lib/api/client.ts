@@ -1,4 +1,4 @@
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000";
+const BASE_URL = "http://91.98.117.174:8000";
 
 type HttpMethod = "GET" | "POST" | "PUT" | "DELETE";
 
